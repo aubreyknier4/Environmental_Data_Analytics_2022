@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Student Name"
+author: "Aubrey Knier"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -22,21 +22,20 @@ The completed exercise is due on <>.
 
 1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: 
+> Answer: I am experienced in data analytics mainly through research projects I'm involved in at Duke, as well as from some of my undergraduate research. I have worked mostly in Excel building, managing, and analyzing big data sheets and have been working a lot in R since beginning my master's degree. It is still a new language for me that can sometimes be confusing, but I'm learning a great deal on my feet in a short amount of time! I have been doing a lot of statistics in Excel and R for my MP and Bass Connections project, a lot of which has been self-taught. As for courses, I've taken ENVIRON 710 and I'm also in ENVIRON 724 this semester, so I'm working in R in that course in addition to this one. As for Git, I'm pretty unfamiliar and haven't used it comfortably before.
 
 2. Are there any components of the course about which you feel confident?
 
-> Answer: 
+> Answer: I generally feel confident exploring data, data visualization, and modeling in R--specifically ANOVAs--which is the main analysis I'm using in my MP. I'm comfortable with experimental designs and determining which statistical analyses can answer specific scientific questions.
 
 3. Are there any components of the course about which you feel apprehensive?
 
-> Answer: 
-
+> Answer: I'm a bit uneasy with Git currently, but I know I will become more confident with time and practice. I don't have experience with Time Series Analyses or Data Scraping, so those will be new topics for me navigate. However, I don't feel necessarily apprehensive about taking on these new skills--I feel more excited to learn them!
 
 ## 2) GitHub
 
 Provide a link below to your forked course repository in GitHub. Make sure you have pulled all recent changes from the course repository  and that you have updated your course README file. 
 
-> Answer: 
+> Answer: https://github.com/aubreyknier4/Environmental_Data_Analytics_2022.git
 
 
