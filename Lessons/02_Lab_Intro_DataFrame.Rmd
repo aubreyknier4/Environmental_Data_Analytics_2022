@@ -3,6 +3,8 @@ title: "Intro to Data Frames in R"
 author: "Environmental Data Analytics | John Fay and Luana Lima"
 date: "1/10/2022"
 output: pdf_document
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 A **data frame** is used for storing data tables. It a list a vector of equal length. 
 
-When we import data to R, data frame is the preferred way for storing the data because columns can have different modes (character, numeric, integer, logical, complex).
+When we import data to R, data frame is the preferred way for storing the data because columns can have different modes (character, numeric, integer, logical, complex). But all columns need same number of rows.
 
 
 ## Data frame built-in example
@@ -69,7 +71,7 @@ How could you add columns to *df_car_speed*?
 car_dist <- cars$dist
 
 #Option 1
-df <- cbind(df_car_speed,car_dist)  #similarly rows could be added using rbind()
+df <- cbind(df_car_speed,car_dist)  #similarly rows could be added using rbind() #cbind=colunn bind, both objects need to have same # of rows
 class(df)
 df
 
