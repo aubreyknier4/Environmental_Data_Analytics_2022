@@ -39,7 +39,7 @@ str(USGS.flow.data)
 dim(USGS.flow.data)
 
 # Check our date column
-class(USGS.flow.data$datetime)
+class(USGS.flow.data$datetime) #dates always brought in as characters in columns
 
 USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%Y-%m-%d") 
 class(USGS.flow.data$datetime)
@@ -97,7 +97,7 @@ An alternate to a histogram is a frequency polygon graph (distributions of value
 #
 ggplot(USGS.flow.data) +
   geom_freqpoly(aes(x = gage.height.mean), bins = 50) +
-  geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "darkgray") +
+  geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "red") +
   geom_freqpoly(aes(x = gage.height.max), bins = 50,  lty = 2) +
   scale_x_continuous(limits = c(0, 10))
 
@@ -134,7 +134,7 @@ ggplot(USGS.flow.data) +
 #
 ggplot(USGS.flow.data) +
   geom_violin(aes(x = gage.height.mean.approval, y = gage.height.mean), 
-              draw_quantiles = c(0.25, 0.5, 0.75))
+              draw_quantiles = c(0.25, 0.5, 0.75)) #shows IQR and width indicates how many data points are in it
 ```
 
 ### Scatterplot (function: geom_point)
