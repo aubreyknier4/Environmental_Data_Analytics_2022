@@ -104,7 +104,7 @@ Olivia_score <- if_else_PF(70); Olivia_score
 
 
 
-ifelse_PF <- recipe6 <- function(x){
+ifelse_PF <- function(x){
   ifelse(x>=50, "Passed", "Failed") #log_exp, if TRUE, if FALSE
   
 }
