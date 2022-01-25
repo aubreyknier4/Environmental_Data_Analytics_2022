@@ -35,7 +35,7 @@ If your working directory is not set to the folder you want, you have several op
 
 ```{r}
 # Absolute file path is commented out
-setwd("/Users/lmm89/OneDrive/Duke_University/7_Spring2021/ENV872_EDA/GitRepo_EDA_S2021/Environmental_Data_Analytics_2021")
+#setwd("/Users/lmm89/OneDrive/Duke_University/7_Spring2021/ENV872_EDA/GitRepo_EDA_S2021/Environmental_Data_Analytics_2021")
 ```
 
 You may change your working directory without coding by going to the Session menu in RStudio and navigating to the Set Working Directory tab. From there, you may select from a series of options to reset your working directory. 
@@ -78,7 +78,7 @@ library(tidyverse)
 
 Question: What happens in the console when you load a package?
 
-> Answer: 
+> Answer: Shows attached packages
 
 ### Import your datasets
 
@@ -136,7 +136,7 @@ colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime",
                               "gage.height.max", "gage.height.max.approval", 
                               "gage.height.min", "gage.height.min.approval", 
                               "gage.height.mean", "gage.height.mean.approval")
-str(USGS.flow.data)
+str(USGS.flow.data) #shows all objects of data frame
 dim(USGS.flow.data)
 length(USGS.flow.data)
 
@@ -154,7 +154,7 @@ summary(USGS.flow.data)  #could point to column only with $
 ```
 
 What happened to blank cells in the spreadsheet when they were imported into R?
-> Answer: 
+> Answer: listed as NAs
 
 ## Adjusting Datasets
 
@@ -168,7 +168,7 @@ summary(USGS.flow.data$gage.height.mean)
 ```
 Question: What types of research questions might make it favorable to remove NAs from a dataset, and what types of research questions might make it favorable to retain NAs in the dataset?
 
-> Answer: 
+> Answer: Favorable: Time series analysis; Non-favorable: just working with data that we have, maybe in habitat modeling where we need rows that have values for all predictor variables
 
 ```{r removeNA}
 USGS.flow.data.complete <- na.omit(USGS.flow.data)
