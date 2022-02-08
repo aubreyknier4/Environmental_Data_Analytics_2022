@@ -26,8 +26,30 @@ The completed exercise is due on Monday, Feb 7 @ 7:00pm.
 ```{r, message = FALSE}
 #1
 getwd()
+library(tidyverse)
+library(lubridate)
+
+O3_2018_data <- read.csv("./Data/Raw/EPAair_O3_NC2018_raw.csv")
+O3_2019_data <- read.csv("./Data/Raw/EPAair_O3_NC2019_raw.csv")
+PM25_2018_data <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
+PM25_2019_data <- read.csv("./Data/Raw/EPAair_PM25_NC2019_raw.csv")
 
 #2
+dim(O3_2018_data)
+colnames(O3_2018_data)
+str(O3_2018_data)
+
+dim(O3_2019_data)
+colnames(O3_2019_data)
+str(O3_2019_data)
+
+dim(PM25_2018_data)
+colnames(PM25_2018_data)
+str(PM25_2018_data)
+
+dim(PM25_2019_data)
+colnames(PM25_2019_data)
+str(PM25_2019_data)
 ```
 
 ## Wrangle individual datasets to create processed files.
@@ -38,12 +60,50 @@ getwd()
 
 ```{r}
 #3
+class(O3_2018_data$Date)
+O3_2018_data$Date <- as.Date(O3_2018_data$Date, format = "%m/%d/%Y")
+class(O3_2018_data$Date)
+
+class(O3_2019_data$Date)
+O3_2019_data$Date <- as.Date(O3_2019_data$Date, format = "%m/%d/%Y")
+class(O3_2019_data$Date)
+
+class(PM25_2018_data$Date)
+PM25_2018_data$Date <- as.Date(PM25_2018_data$Date, format = "%m/%d/%Y")
+class(PM25_2018_data$Date)
+
+class(PM25_2019_data$Date)
+PM25_2019_data$Date <- as.Date(PM25_2019_data$Date, format = "%m/%d/%Y")
+class(PM25_2019_data$Date)
 
 #4
+O3_2018_subset <- select(O3_2018_data, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+
+O3_2019_subset <- select(O3_2019_data, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+
+PM25_2018_subset <- select(PM25_2018_data, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+
+PM25_2019_subset <- select(PM25_2019_data, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
 
 #5
+unique(PM25_2018_subset$AQS_PARAMETER_DESC)
+PM25_2018_subset <- PM25_2018_subset %>% mutate(AQS_PARAMETER_DESC= recode(AQS_PARAMETER_DESC,
+                                     "Acceptable PM2.5 AQI & Speciation Mass" = "PM2.5",
+                                     "PM2.5 - Local Conditions" = "PM2.5"))
+unique(PM25_2018_subset$AQS_PARAMETER_DESC)
+
+
+unique(PM25_2019_subset$AQS_PARAMETER_DESC)
+PM25_2019_subset <- PM25_2019_subset %>% mutate(AQS_PARAMETER_DESC= recode(AQS_PARAMETER_DESC,
+                                     "Acceptable PM2.5 AQI & Speciation Mass" = "PM2.5",
+                                     "PM2.5 - Local Conditions" = "PM2.5"))
+unique(PM25_2019_subset$AQS_PARAMETER_DESC)
 
 #6
+write.csv(O3_2018_subset, row.names = FALSE, file = "./Data/Processed/EPAair_O3_NC2018_processed.csv")
+write.csv(O3_2019_subset, row.names = FALSE, file = "./Data/Processed/EPAair_O3_NC2019_processed.csv")
+write.csv(PM25_2018_subset, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2018_processed.csv")
+write.csv(PM25_2019_subset, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2019_processed.csv")
 
 ```
 
@@ -63,15 +123,39 @@ getwd()
 
 ```{r}
 #7
+O3_2018_proc <- read.csv("./Data/Processed/EPAair_O3_NC2018_processed.csv")
+O3_2019_proc <- read.csv("./Data/Processed/EPAair_O3_NC2019_processed.csv")
+PM25_2018_proc <- read.csv("./Data/Processed/EPAair_PM25_NC2018_processed.csv")
+PM25_2019_proc <- read.csv("./Data/Processed/EPAair_PM25_NC2019_processed.csv")
+
+colnames(O3_2018_proc)
+colnames(O3_2019_proc)
+colnames(PM25_2018_proc)
+colnames(PM25_2019_proc)
+
+O3_PM25_18_19_data <- rbind(O3_2018_proc, O3_2019_proc, PM25_2018_proc, PM25_2019_proc)
 
 #8
+O3_PM25_18_19_data_pipe <- 
+O3_PM25_18_19_data %>%
+  filter(Site.Name == "Linville Falls" | Site.Name == "Durham Armory" | Site.Name == "Leggett" | Site.Name == "Hattie Avenue" | Site.Name == "Clemmons Middle" | Site.Name == "Mendenhall School" | Site.Name == "Frying Pan Mountain" | Site.Name == "West Johnston Co." | Site.Name == "Garinger High School" | Site.Name == "Castle Hayne" | Site.Name == "Pitt Agri. Center" | Site.Name == "Bryson City" | Site.Name == "Millbrook School") %>%
+  group_by(Date, Site.Name, AQS_PARAMETER_DESC, COUNTY) %>%
+  summarise(meanAQI = mean(DAILY_AQI_VALUE),
+            meanlat = mean(SITE_LATITUDE),
+            meanlong = mean(SITE_LONGITUDE)) %>%
+  mutate(Month = month(Date)) %>%
+  mutate(Year = year(Date))
+
+dim(O3_PM25_18_19_data_pipe)
 
 #9
+O3_PM25_18_19_data_pipe_spread <- spread(O3_PM25_18_19_data_pipe, AQS_PARAMETER_DESC, meanAQI)
 
 #10
+dim(O3_PM25_18_19_data_pipe_spread)
 
 #11
-
+write.csv(O3_PM25_18_19_data_pipe_spread, row.names=FALSE, file = "./Data/Processed/EPAair_O3_PM25_NC2122_Processed.csv")
 ```
 
 
@@ -86,8 +170,28 @@ getwd()
 ```{r}
 #12(a,b)
 
+#a
+O3_PM25_proc <- read.csv("./Data/Processed/EPAair_O3_PM25_NC2122_Processed.csv")
+
+(O3_PM25_proc_summary <-
+  O3_PM25_proc %>%
+  group_by(Site.Name, Month, Year) %>%
+  summarise(meanAQI_Ozone = mean(Ozone),
+            meanAQI_PM2.5 = mean(PM2.5)))
+  
+#b
+(O3_PM25_proc_summary_bonus <-
+  O3_PM25_proc %>%
+  group_by(Site.Name, Month, Year) %>%
+  summarise(meanAQI_Ozone = mean(Ozone),
+            meanAQI_PM2.5 = mean(PM2.5)) %>%
+  filter(rowSums(across(meanAQI_Ozone:meanAQI_PM2.5, ~!is.na(.))) >0))
+  
 
 #13
+
+#note: dimensions are of dataset created from bonus question
+dim(O3_PM25_proc_summary_bonus)
 
 ```
 
