@@ -19,6 +19,7 @@ editor_options:
 The expression function can be used when you want to add mathematical symbols and subscripts mixed with regular letter to labels. 
 
 ```{r}
+library(ggplot2)
 Plot_text <-
 ggplot(data=data.frame(x=0,y=0))+
   geom_point(aes(x=x,y=y)) +
@@ -55,11 +56,19 @@ Exercise: build your own scatterplots of PeterPaul.chem.nutrients
 
 ```{r, fig.height = 3, fig.width = 4, warning = FALSE}
 
+library(viridis)
+library(RColorBrewer)
+library(colormap)
+
+PeterPaul.chem.nutrients.surface <- PeterPaul.chem.nutrients %>% filter(depth == 0)
 # 1. 
 # Plot surface temperatures by day of  year. 
 # Color your points by year, and facet by lake in two rows.
 # Change the ylab name
-
+ggplot(PeterPaul.chem.nutrients.surface, aes(x=daynum, y=temperature_C, col=year4)) +
+  geom_point() +
+  facet_wrap(vars(lakename), nrow = 1) +
+    ylab("Temperature C")
 
 #2. 
 # Plot temperature by date. Color your points by depth.
@@ -67,9 +76,12 @@ Exercise: build your own scatterplots of PeterPaul.chem.nutrients
 # Change the color palette to magma and play with direction (+- 1), which one makes more sense?
 # Change x axis to include marker/labels every 5 years
 
-
-
-
+ggplot(PeterPaul.chem.nutrients, aes(x=sampledate, y=temperature_C, col=depth)) +
+  geom_point(size=0.5)  +
+      scale_color_viridis(option = "magma", direction = -1) +
+        scale_x_date(date_breaks = "5 years", date_labels = "%Y")
+    
+  
 ```
 ## Plotting the relationship between two continuous variables: Scatterplot
 
