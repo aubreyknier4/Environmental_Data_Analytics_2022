@@ -1,6 +1,6 @@
 ---
 title: "Assignment 5: Data Visualization"
-author: "Student Name"
+author: "Aubrey Knier"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -33,16 +33,42 @@ the processed data file for the Niwot Ridge litter dataset (use the [`NEON_NIWO_
 
 ```{r}
 #1 
+setwd("/Users/aubreyknier/Desktop/Spring 2022/ENV872_EDA/Environmental_Data_Analytics_2022")
+getwd()
+
+library(tidyverse)
+library(cowplot)
+
+PeterPaul.chem.nutrients.data <- 
+  read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
+
+NIMO.litter.data <- 
+  read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
 
 #2 
 
+#Peter Paul Lakes dates
+class(PeterPaul.chem.nutrients.data$sampledate)
+PeterPaul.chem.nutrients.data$sampledate <- as.Date(
+  PeterPaul.chem.nutrients.data$sampledate, format = "%Y-%m-%d")
+class(PeterPaul.chem.nutrients.data$sampledate)
+
+#NIWOT ridge dates
+class(NIMO.litter.data$collectDate)
+NIMO.litter.data$collectDate <- as.Date(
+  NIMO.litter.data$collectDate, format = "%Y-%m-%d")
+class(NIMO.litter.data$collectDate)
 ```
 ## Define your theme
 3. Build a theme and set it as your default theme.
 
 ```{r}
 #3
-
+mytheme <- theme_linedraw(base_size = 14) +
+  theme(axis.text = element_text(color = "grey15", face="bold"), 
+        legend.position = "top")
+  
+theme_set(mytheme)
 ```
 
 ## Create graphs
@@ -53,6 +79,21 @@ For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best pract
 ```{r}
 #4
 
+library(viridis)
+library(RColorBrewer)
+library(colormap)
+library(ggplot2)
+
+NTL_LTER_phos_plot <- 
+ggplot(PeterPaul.chem.nutrients.data, aes(x=tp_ug, y=po4, color=lakename)) +
+  geom_point() + ylim(0,45) + 
+    xlab("Total Phosphorous") + ylab("Phosphate") + 
+      labs(color="Lake Name") +
+        geom_smooth(method="lm", color="black") +
+          scale_color_manual(values=c("seagreen", "darkorange2")) +
+        facet_wrap(vars(lakename), nrow = 1) 
+print(NTL_LTER_phos_plot)
+
 ```
 
 
@@ -60,6 +101,50 @@ For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best pract
 
 ```{r}
 #5
+
+PeterPaul.chem.nutrients.data$month <- as.factor(PeterPaul.chem.nutrients.data$month)
+
+#a. temperature
+NTL_LTER_temp_boxplot <- 
+ggplot(PeterPaul.chem.nutrients.data, aes(x=month, y=temperature_C)) +
+  geom_boxplot(aes(color=lakename)) +
+    ylab("Temperature (C)") +
+      xlab("Month") +
+        xlim(c("5","6","7","8","9")) +
+          labs(color="Lake name") +
+            theme(legend.position = "none") +
+        scale_color_manual(values=c("seagreen", "darkorange2")) 
+print(NTL_LTER_temp_boxplot)
+
+
+#b. TP
+NTL_LTER_TP_boxplot <-
+  ggplot(PeterPaul.chem.nutrients.data, aes(x=month, y=tp_ug)) +
+    geom_boxplot(aes(color=lakename)) +
+      ylab("TB") +
+        xlab("Month") +
+           xlim(c("5","6","7","8","9")) +
+          scale_color_manual(values=c("seagreen", "darkorange2")) + theme(legend.position = "none")
+print(NTL_LTER_TP_boxplot)
+
+#c. TN
+NTL_LTER_TN_boxplot <-
+  ggplot(PeterPaul.chem.nutrients.data, aes(x=month, y=tn_ug)) +
+    geom_boxplot(aes(color=lakename)) +
+      ylab("TN") +
+        xlab("Month") +
+          xlim(c("5","6","7","8","9")) +
+          scale_color_manual(values=c("seagreen", "darkorange2")) + theme(legend.position = "none")
+print(NTL_LTER_TN_boxplot)
+
+
+legend_NTL_LTER <- get_legend(
+  NTL_LTER_temp_boxplot + 
+    guides(color = guide_legend(nrow = 1)) +
+    theme(legend.position = "bottom")
+)
+
+plot_grid(NTL_LTER_temp_boxplot, NTL_LTER_TP_boxplot, NTL_LTER_TN_boxplot, legend_NTL_LTER, nrow = 2, align = 'h', rel_heights = c(1.25, 1.25))
 
 ```
 
