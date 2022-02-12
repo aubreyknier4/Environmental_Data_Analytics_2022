@@ -42,7 +42,7 @@ library(cowplot)
 PeterPaul.chem.nutrients.data <- 
   read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
 
-NIMO.litter.data <- 
+NIWO.litter.data <- 
   read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
 
 #2 
@@ -54,10 +54,10 @@ PeterPaul.chem.nutrients.data$sampledate <- as.Date(
 class(PeterPaul.chem.nutrients.data$sampledate)
 
 #NIWOT ridge dates
-class(NIMO.litter.data$collectDate)
-NIMO.litter.data$collectDate <- as.Date(
-  NIMO.litter.data$collectDate, format = "%Y-%m-%d")
-class(NIMO.litter.data$collectDate)
+class(NIWO.litter.data$collectDate)
+NIWO.litter.data$collectDate <- as.Date(
+  NIWO.litter.data$collectDate, format = "%Y-%m-%d")
+class(NIWO.litter.data$collectDate)
 ```
 ## Define your theme
 3. Build a theme and set it as your default theme.
@@ -78,11 +78,11 @@ For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best pract
 
 ```{r}
 #4
-
-library(viridis)
-library(RColorBrewer)
-library(colormap)
 library(ggplot2)
+library(RColorBrewer)
+#display.brewer.all()
+
+
 
 NTL_LTER_phos_plot <- 
 ggplot(PeterPaul.chem.nutrients.data, aes(x=tp_ug, y=po4, color=lakename)) +
@@ -90,8 +90,7 @@ ggplot(PeterPaul.chem.nutrients.data, aes(x=tp_ug, y=po4, color=lakename)) +
     xlab("Total Phosphorous") + ylab("Phosphate") + 
       labs(color="Lake Name") +
         geom_smooth(method="lm", color="black") +
-          scale_color_manual(values=c("seagreen", "darkorange2")) +
-        facet_wrap(vars(lakename), nrow = 1) 
+         scale_color_brewer(palette = "Dark2")
 print(NTL_LTER_phos_plot)
 
 ```
@@ -99,8 +98,10 @@ print(NTL_LTER_phos_plot)
 
 5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c) TN, with month as the x axis and lake as a color aesthetic. Then, create a cowplot that combines the three graphs. Make sure that only one legend is present and that graph axes are aligned.
 
-```{r}
+```{r, fig.height = 8, fig.width = 6, warning = FALSE}
 #5
+#display.brewer.all()
+
 
 PeterPaul.chem.nutrients.data$month <- as.factor(PeterPaul.chem.nutrients.data$month)
 
@@ -110,22 +111,23 @@ ggplot(PeterPaul.chem.nutrients.data, aes(x=month, y=temperature_C)) +
   geom_boxplot(aes(color=lakename)) +
     ylab("Temperature (C)") +
       xlab("Month") +
-        xlim(c("5","6","7","8","9")) +
+        xlim(c("5","6","7","8","9", "10", "11")) +
           labs(color="Lake name") +
             theme(legend.position = "none") +
-        scale_color_manual(values=c("seagreen", "darkorange2")) 
-print(NTL_LTER_temp_boxplot)
+        scale_color_brewer(palette = "Dark2")
+# print(NTL_LTER_temp_boxplot)
 
 
 #b. TP
 NTL_LTER_TP_boxplot <-
   ggplot(PeterPaul.chem.nutrients.data, aes(x=month, y=tp_ug)) +
     geom_boxplot(aes(color=lakename)) +
-      ylab("TB") +
+      ylab("TP") +
         xlab("Month") +
-           xlim(c("5","6","7","8","9")) +
-          scale_color_manual(values=c("seagreen", "darkorange2")) + theme(legend.position = "none")
-print(NTL_LTER_TP_boxplot)
+           xlim(c("5","6","7","8","9", "10", "11")) +
+   theme(legend.position = "none") +
+         scale_color_brewer(palette = "Dark2")
+# print(NTL_LTER_TP_boxplot)
 
 #c. TN
 NTL_LTER_TN_boxplot <-
@@ -133,9 +135,10 @@ NTL_LTER_TN_boxplot <-
     geom_boxplot(aes(color=lakename)) +
       ylab("TN") +
         xlab("Month") +
-          xlim(c("5","6","7","8","9")) +
-          scale_color_manual(values=c("seagreen", "darkorange2")) + theme(legend.position = "none")
-print(NTL_LTER_TN_boxplot)
+          xlim(c("5","6","7","8","9", "10", "11")) +
+          scale_color_brewer(palette = "Dark2") +
+            theme(legend.position = "none")
+# print(NTL_LTER_TN_boxplot)
 
 
 legend_NTL_LTER <- get_legend(
@@ -144,25 +147,54 @@ legend_NTL_LTER <- get_legend(
     theme(legend.position = "bottom")
 )
 
-plot_grid(NTL_LTER_temp_boxplot, NTL_LTER_TP_boxplot, NTL_LTER_TN_boxplot, legend_NTL_LTER, nrow = 2, align = 'h', rel_heights = c(1.25, 1.25))
+plot_grid(NTL_LTER_temp_boxplot, NTL_LTER_TP_boxplot,
+          NTL_LTER_TN_boxplot, legend_NTL_LTER, nrow = 4, align = 'hv',
+            axis="lbt", rel_heights = c(3, 3, 3,.25))
 
 ```
 
 Question: What do you observe about the variables of interest over seasons and between lakes? 
 
-> Answer: 
+> Answer: Lake temperatures are consistent for both Paul and Peter Lake and are highest in the summer months. For both TP and TN, Peter Lake has more variablility and outliers than Paul Lake. In the summer months, Peter Lake also has higher median TP and TN than Paul Lake.
 
 6. [Niwot Ridge] Plot a subset of the litter dataset by displaying only the "Needles" functional group. Plot the dry mass of needle litter by date and separate by NLCD class with a color aesthetic. (no need to adjust the name of each land use)
 
 7. [Niwot Ridge] Now, plot the same plot but with NLCD classes separated into three facets rather than separated by color. 
 
-```{r}
+```{r, warning = FALSE}
 #6
+#display.brewer.all()
+
+NIWO.needle.subset <- 
+    NIWO.litter.data %>%
+      filter(functionalGroup == "Needles")
+
+NIWO.needle.plot <-
+ggplot(NIWO.needle.subset, aes(x=collectDate, y=dryMass, col=nlcdClass)) +
+  geom_point(size=3) +
+    labs(color = "NLCD Class") +
+      ggtitle("Needle litter dry mass") +
+        xlab("Month-Year") +
+          ylab("Dry mass") +
+            scale_x_date(date_breaks="6 months", date_labels="%m-%Y") +
+              scale_color_brewer(palette = "Dark2")
+print(NIWO.needle.plot)
+
 
 #7
+NIWO.needle.facet.plot <-
+ggplot(NIWO.needle.subset, aes(x=collectDate, y=dryMass)) +
+  geom_point(color="aquamarine4", size=2) +
+    labs(color = "NLCD Class") +
+      ggtitle("Needle litter dry mass") +
+        xlab("Month-Year") +
+          ylab("Dry mass") +
+            scale_x_date(date_breaks="6 months", date_labels="%m-%Y") +
+              facet_wrap(vars(nlcdClass), nrow=3)
+print(NIWO.needle.facet.plot)
 
 
 ```
 Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
 
-> Answer:
+> Answer: I think that either plot could be effective depending on what you are trying to convey about the dataa or analyze. If you are interested in showing how the three land types have similar dry masses, then plot 6 would be a good option becuase when overlayed is shows how the three land types have very similar ranges. However, if you want to focus on the differences between the land type dry masses, as opposed to the similarities, then plot 7 is more effective because the ranges of the dry masses overlap so much that simply color coding them is not enough, and separating them into facets will be the easiest way to visually distinguish these data.
