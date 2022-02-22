@@ -16,8 +16,9 @@ editor_options:
 ```{r, message = FALSE}
 getwd()
 library(tidyverse)
-#install.packages("agricolae")
+install.packages("agricolae")
 library(agricolae)   #you may need to install/update package "htmltools" before installing and loading agricolae
+library(htmltools)
 
 Litter <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
 
@@ -50,6 +51,7 @@ summary(Litter.Totals$plotID)
 # not necessarily normality of raw data. See below when we plot the model.
 # shapiro.test() performs the Shapiro-Wilk test of the null that data follows a normal distribution
 
+#high p-value means it is normally distributed, low p-value means reject the null hypothesis that the data are normally distributed
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_040"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_041"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_046"])
@@ -70,12 +72,14 @@ qqnorm(Litter.Totals$dryMass); qqline(Litter.Totals$dryMass)
 # ANOVA is robust against departures from equal variance.
 # bartlett.test() performs Bartlett's test of the null that the variances in each of the groups (samples) are the same.
 bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID)
+#low p-value -- reject null hyp that variancees are not equal
 
 #results: reject null i.e. variances are not equal
 
 # Format ANOVA as aov
 Litter.Totals.anova <- aov(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova)
+#shows that not all group means are equal
 
 #results: reject null hypothesis i.e. difference between a pair of group means is statiscally significant
 
@@ -94,6 +98,7 @@ TukeyHSD(Litter.Totals.anova)
 # Extract groupings for pairwise relationships
 Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
 Litter.Totals.groups
+#groups treatment groups with same mean
 
 # Graph the results
 Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
@@ -119,6 +124,7 @@ A two-way ANOVA allows us to examine the effects of two categorical explanatory 
 # Format as aov
 Litter.anova.2way <- aov(data = Litter, dryMass ~ functionalGroup + nlcdClass)
 summary(Litter.anova.2way)
+#reject null hyp that mean across groups in the same
 
 # Format as lm
 Litter.anova.2way2 <- lm(data = Litter, dryMass ~ functionalGroup + nlcdClass)
