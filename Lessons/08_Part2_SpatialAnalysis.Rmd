@@ -117,20 +117,22 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r read HUCs shapefile}
 #Read the shapefile into an sf dataframe named "huc8_sf"
-
+huc8_sf <- st_read("./Data/Spatial/NCHUC8.shp")
 
 #Reveal the columns
-
+colnames(huc8_sf)
 
 #Check the CRS
-
+st_crs(huc8_sf)
 
 #Examine some records
-
+head(huc8_sf)
 
 #View the data as a map, colored by the acreage in each
-
-
+huc18_acres_map <- ggplot() + 
+  geom_sf(data=huc8_sf, aes(fill = ACRES)) +
+    scale_fill_continuous(type="viridis")
+print(huc18_acres_map)
 ```
 
 ### 2.2.3 Challenge!
@@ -139,11 +141,14 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r Select the Upper Neuse HUC 8}
 #Read the shapefile into an sf dataframe
-
-
+subset_huc8_sf <- huc8_sf %>%
+  filter(SUBBASIN == "Upper Neuse")
 
 #Create a map
-
+huc18_upper_neuse_plot <- ggplot() +
+    geom_sf(data=huc8_sf, fill="orange") +
+    geom_sf(data=subset_huc8_sf, fill="purple")
+print(huc18_upper_neuse_plot)
 
 ```
 
@@ -184,7 +189,8 @@ nc_powerplants_sf <- nc_powerplants_sf %>%
 
 # Examine counts by fuel type
 ggplot(nc_powerplants_sf) + 
-  geom_sf(aes(color = PRIM_FUEL)) 
+  geom_sf(aes(color = PRIM_FUEL)) +
+  
 ```
 
 # 3. WORKING WITH SPATIAL DATA
@@ -239,19 +245,26 @@ ggplot() +
 
 ```{r}
 #Compute HUC8 wind energy
-
-
-
+wind_nc_raw <- read.csv('https://raw.githubusercontent.com/ENV859/EnviroAtlasData/main/Wind_Energy.csv', 
+                        colClasses=c("HUC_12" = "factor")) %>%
+  mutate(HUC_8 = substr(HUC_12, 1, 8)) %>%
+  group_by(HUC_8) %>%
+  summarize(sum_wind_energy = sum(AvgWindEnergy))
 
 #Join to HUC_8 features
 
-
-
+wind_huc8_join <-  merge(x = huc8_sf,
+                           y = wind_nc_raw, 
+                           by.x = "HUC_8", 
+                           by.y = "HUC_8" )
 
 #View the outputs
-
-
-
+ggplot(data=wind_huc8_join) +
+  geom_sf(aes(fill=sum_wind_energy)) +
+    labs(
+        title="Wind energy by HUC 8",
+        fill="MW/year"
+    )
 ```
 
 ## 3.1 Spatial data aggregation with `group_by` and `summarize`.
