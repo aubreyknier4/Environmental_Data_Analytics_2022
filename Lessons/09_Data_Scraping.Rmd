@@ -1,3 +1,4 @@
+
 ---
 title: "9: Data Scraping"
 author: "Environmental Data Analytics | John Fay"
@@ -217,7 +218,7 @@ We have our code so we can fairly easily scrape any site (if we know its ID) for
 
 ```{r create.our.function}
 #Create our scraping function
-scrape.it <- function(the_year, the_facility){
+scrape.it <- function(the.year, the.pwsid){
   
   #Retrieve the website contents 
   the_website <- read_html(paste0('https://www.ncwater.org/WUDC/app/WWATR/report/view/', 

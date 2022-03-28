@@ -190,9 +190,9 @@ ggplot(new.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) +
 ```{r fetch.and.plot.Durham.2015.data}
 #8
 asheville.df <- scrape.it(2015, '01-11-010')
-dur.ash.df <- cbind(new.df, asheville.df)
+dur.ash.df <- rbind(new.df, asheville.df)
 
-ggplot(dur.ash.df, aes(x=Date,y=Max_Daily_Use_per_Month, col=Water_System_Name)) + 
+ggplot(dur.ash.df, aes(x=Date, y=Max_Daily_Use_per_Month, group=Water_System_Name, color=Water_System_Name)) +
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
   labs(title = paste("Max Daily Withdrawls across the Months for 2015"),
@@ -206,7 +206,21 @@ ggplot(dur.ash.df, aes(x=Date,y=Max_Daily_Use_per_Month, col=Water_System_Name))
 
 ```{r}
 #9
+the.years = rep(2010:2019)
+pswid = '01-11-010'
 
+ash.1019.dfs <- lapply(X = the.years,
+                  FUN = scrape.it,
+                  pswid=pswid)
+ash.1019.df <- bind_rows(ash.1019.dfs)
+
+ggplot(ash.1019.df,aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("Max Daily Withdrawls across the Months for 2010-2019"),
+       subtitle = "Asheville",
+       y="Max Daily Use (mgd)",
+       x="Date")
 
 ```
 
