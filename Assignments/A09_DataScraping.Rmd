@@ -121,7 +121,7 @@ watersupply.df <- watersupply.df %>%
                     
 
 #5
-ggplot(watersupply.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) + 
+ggplot(watersupply.df, aes(x=Date,y=as.numeric(Max_Daily_Use_per_Month), group=1)) + 
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
   labs(title = paste("Max Daily Withdrawls across the Months for 2020"),
@@ -137,7 +137,9 @@ ggplot(watersupply.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) +
 #6.
 scrape.it <- function(the.year, pswid){
 
-  the.website <- read_html(paste0('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=',pswid,'&year=', the.year))
+  the.website <- read_html(paste0(
+    'https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=',pswid,'&year=',
+    the.year))
 
   water.system.name.tag <- "div+ table tr:nth-child(1) td:nth-child(2)"
   pswid.tag <- "td tr:nth-child(1) td:nth-child(5)"
@@ -162,6 +164,7 @@ watersupply.df <- watersupply.df %>%
                   mutate(Date=my(paste(Month, "-", Year)))
 
 
+
 return(watersupply.df)
   
 }
@@ -171,12 +174,12 @@ return(watersupply.df)
 
 7. Use the function above to extract and plot max daily withdrawals for Durham (PWSID='03-32-010') for each month in 2015
 
-```{r fetch.and.plot.Durham.2015.data}
+```{r fetch.and.plot.Durham.2015.data A}
 #7
 new.df <- scrape.it(2015, '03-32-010')
 view(new.df)
 
-ggplot(new.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) + 
+ggplot(new.df, aes(x=Date,y=as.numeric(Max_Daily_Use_per_Month, group=1))) + 
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
   labs(title = paste("Max Daily Withdrawls across the Months for 2015"),
@@ -187,12 +190,13 @@ ggplot(new.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) +
 
 8. Use the function above to extract data for Asheville (PWSID = 01-11-010) in 2015. Combine this data with the Durham data collected above and create a plot that compares the Asheville to Durham's water withdrawals.
 
-```{r fetch.and.plot.Durham.2015.data}
+```{r fetch.and.plot.Durham.2015.data B}
 #8
 asheville.df <- scrape.it(2015, '01-11-010')
 dur.ash.df <- rbind(new.df, asheville.df)
 
-ggplot(dur.ash.df, aes(x=Date, y=Max_Daily_Use_per_Month, group=Water_System_Name, color=Water_System_Name)) +
+ggplot(dur.ash.df, aes(x=Date, y=as.numeric(Max_Daily_Use_per_Month), group=Water_System_Name, 
+                       color=Water_System_Name)) +
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
   labs(title = paste("Max Daily Withdrawls across the Months for 2015"),
@@ -212,16 +216,18 @@ pswid = '01-11-010'
 ash.1019.dfs <- lapply(X = the.years,
                   FUN = scrape.it,
                   pswid=pswid)
+
 ash.1019.df <- bind_rows(ash.1019.dfs)
 
-ggplot(ash.1019.df,aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) + 
+ggplot(ash.1019.df,aes(x=Date,y=as.numeric(Max_Daily_Use_per_Month), group=1)) + 
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
   labs(title = paste("Max Daily Withdrawls across the Months for 2010-2019"),
        subtitle = "Asheville",
        y="Max Daily Use (mgd)",
-       x="Date")
+       x="Date") 
 
 ```
 
 >Question: Just by looking at the plot (i.e. not running statistics), does Asheville have a trend in water usage over time?
+Yes, maximum daily water use in Asheville has increased over the years 2010-2019.
