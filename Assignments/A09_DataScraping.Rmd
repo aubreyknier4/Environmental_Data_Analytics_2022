@@ -1,6 +1,6 @@
 ---
 title: "Assignment 09: Data Scraping"
-author: "Student Name"
+author: "Aubrey Knier"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -30,13 +30,21 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 
 ```{r, message = FALSE}
 #1
+getwd()
 
+library(tidyverse)
+library(rvest)
+library(lubridate)
+
+mytheme <- theme_light() +
+  theme(axis.text = element_text(color = "darkorchid4"), 
+        legend.position = "right")
+theme_set(mytheme)
 
 ```
 
-2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2019 Municipal Local Water Supply Plan (LWSP): 
+2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2020 Municipal Local Water Supply Plan (LWSP): 
  * Navigate to https://www.ncwater.org/WUDC/app/LWSP/search.php
- * Change the date from 2020 to 2019 in the upper right corner.
  * Scroll down and select the LWSP link next to Durham Municipality. 
  * Note the web address: <https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2020>
 
@@ -45,7 +53,8 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 
 ```{r set.the.scraping.website}
 #2
-
+website <- read_html("https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2020")
+website
 
 ```
 
@@ -57,7 +66,7 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
  * Ownership
  
 * From the "3. Water Supply Sources" section:
- * Average Daily Use (MGD) - for each month
+ * MAX Daily Use (MGD) - for each month
 
 In the code chunk below scrape these values, assigning them to three separate variables.
 
@@ -65,10 +74,25 @@ In the code chunk below scrape these values, assigning them to three separate va
 
 ```{r scrape.the.data}
 #3
-water.system.name <- 
-pswid <- 
-ownership <- 
-max.withdrawals.mgd <- 
+water.system.name <- website %>% 
+  html_nodes("div+ table tr:nth-child(1) td:nth-child(2)") %>% 
+  html_text()
+water.system.name
+
+pswid <- website %>% 
+  html_nodes("td tr:nth-child(1) td:nth-child(5)") %>% 
+  html_text()
+pswid
+
+ownership <- website %>% 
+  html_nodes("div+ table tr:nth-child(2) td:nth-child(4)") %>% 
+  html_text()
+ownership
+
+max.withdrawals.mgd <- website %>% 
+  html_nodes("th~ td+ td") %>% 
+  html_text()
+max.withdrawals.mgd
 
 ```
 
@@ -83,12 +107,27 @@ max.withdrawals.mgd <-
 
 ```{r create.a.dataframe.from.scraped.data}
 #4
-
-
+watersupply.df <- data.frame("Month" = c("Jan", "May", "Sept", "Feb", 
+                                         "Jun", "Oct", "Mar", "Jul", 
+                                         "Nov", "Apr", "Aug", "Dec"),
+                             "Year" = 2020,
+                             "Water_System_Name" = water.system.name,
+                             "PSWID" = pswid,
+                             "Ownership" = ownership,
+                             "Max_Daily_Use_per_Month" = max.withdrawals.mgd 
+                              ) 
+watersupply.df <- watersupply.df %>%
+                  mutate(Date=my(paste(Month, "-", Year)))
+                    
 
 #5
-
-
+ggplot(watersupply.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("Max Daily Withdrawls across the Months for 2020"),
+       subtitle = water.system.name,
+       y="Max Daily Use (mgd)",
+       x="Date")
 
 ```
 
@@ -96,8 +135,37 @@ max.withdrawals.mgd <-
 
 ```{r construct.a.scraping.function}
 #6.
+scrape.it <- function(the.year, pswid){
+
+  the.website <- read_html(paste0('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=',pswid,'&year=', the.year))
+
+  water.system.name.tag <- "div+ table tr:nth-child(1) td:nth-child(2)"
+  pswid.tag <- "td tr:nth-child(1) td:nth-child(5)"
+  ownership.tag <- "div+ table tr:nth-child(2) td:nth-child(4)"
+  max.withdrawals.mgd.tag <- "th~ td+ td"
+  
+  water.system.name <- the.website %>% html_nodes(water.system.name.tag) %>% html_text()
+  pswid <- the.website %>% html_nodes(pswid.tag) %>% html_text()
+  ownership <- the.website %>% html_nodes(ownership.tag) %>% html_text()
+  max.withdrawals.mgd <- the.website %>% html_nodes(max.withdrawals.mgd.tag) %>% html_text()
+  
+  watersupply.df <- data.frame("Month" = c("Jan", "May", "Sept", "Feb", 
+                                         "Jun", "Oct", "Mar", "Jul", 
+                                         "Nov", "Apr", "Aug", "Dec"),
+                             "Year" = the.year,
+                             "Water_System_Name" = water.system.name,
+                             "PSWID" = pswid,
+                             "Ownership" = ownership,
+                             "Max_Daily_Use_per_Month" = max.withdrawals.mgd 
+                              ) 
+watersupply.df <- watersupply.df %>%
+                  mutate(Date=my(paste(Month, "-", Year)))
 
 
+return(watersupply.df)
+  
+}
+  
 
 ```
 
@@ -105,16 +173,32 @@ max.withdrawals.mgd <-
 
 ```{r fetch.and.plot.Durham.2015.data}
 #7
+new.df <- scrape.it(2015, '03-32-010')
+view(new.df)
 
-
+ggplot(new.df, aes(x=Date,y=Max_Daily_Use_per_Month, group=1)) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("Max Daily Withdrawls across the Months for 2015"),
+       subtitle = water.system.name,
+       y="Max Daily Use (mgd)",
+       x="Date")
 ```
 
 8. Use the function above to extract data for Asheville (PWSID = 01-11-010) in 2015. Combine this data with the Durham data collected above and create a plot that compares the Asheville to Durham's water withdrawals.
 
 ```{r fetch.and.plot.Durham.2015.data}
 #8
+asheville.df <- scrape.it(2015, '01-11-010')
+dur.ash.df <- cbind(new.df, asheville.df)
 
-
+ggplot(dur.ash.df, aes(x=Date,y=Max_Daily_Use_per_Month, col=Water_System_Name)) + 
+  geom_line() + 
+  geom_smooth(method="loess",se=FALSE) +
+  labs(title = paste("Max Daily Withdrawls across the Months for 2015"),
+       subtitle = "Durham and Asheville",
+       y="Max Daily Use (mgd)",
+       x="Date")
 ```
 
 
