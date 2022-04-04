@@ -11,40 +11,39 @@ nutrient_data <- nutrient_data %>%
   select(lakename, sampledate:po4)
 
 #### Define UI ----
-ui <- fluidPage(theme = shinytheme("yeti"),
+ui <- fluidPage(theme = shinytheme("darkly"),
   titlePanel("Nutrients in Peter Lake and Paul Lake"),
   sidebarLayout(
     sidebarPanel(
       
       # Select nutrient to plot
       selectInput(inputId = "y", 
-                  label = "Nutrient",
+                  label = "Nutrient Element",
                   choices = c("tn_ug", "tp_ug", "nh34", "no23", "po4"), 
-                  selected = "tp_ug"),
+                  selected = "tn_ug"),
       
       # Select depth
       checkboxGroupInput(inputId = "fill",
                          label = "Depth ID",
                          choices = unique(nutrient_data$depth_id),
-                         selected = c(1, 7)),
+                         selected = c(1,2,3,4,5,6,7)),
       
       # Select lake
       checkboxGroupInput(inputId = "shape",
                          label = "Lake",
                          choices = c("Peter Lake", "Paul Lake"),
-                         selected = "Peter Lake"),
+                         selected = c("Peter Lake", "Paul Lake")),
 
       # Select date range to be plotted
       sliderInput(inputId = "x",
                   label = "Date",
                   min = as.Date("1991-05-01"),
                   max = as.Date("2016-12-31"),
-                  value = c(as.Date("1995-01-01"), as.Date("1999-12-31")))),
+                  value = c(as.Date("1991-05-01"), as.Date("2016-12-31")))),
 
     # Output
     mainPanel(
-      plotOutput("scatterplot", brush = brushOpts(id = "scatterplot_brush")), 
-      tableOutput("mytable")
+      plotOutput("scatterplot", brush = brushOpts(id = "scatterplot_brush"))
     )))
 
 #### Define server  ----
@@ -63,11 +62,11 @@ server <- function(input, output) {
         ggplot(filtered_nutrient_data(), 
                aes_string(x = "sampledate", y = input$y, 
                           fill = "depth_id", shape = "lakename")) +
-          geom_point(alpha = 0.8, size = 2) +
-          theme_classic(base_size = 14) +
-          scale_shape_manual(values = c(21, 24)) +
+          geom_point(alpha = 0.6, size = 6) +
+          theme_classic(base_size = 16) +
+          scale_shape_manual(values = c(22, 24)) +
           labs(x = "Date", y = expression(Concentration ~ (mu*g / L)), shape = "Lake", fill = "Depth ID") +
-          scale_fill_distiller(palette = "YlOrBr", guide = "colorbar", direction = 1)
+          scale_fill_distiller(palette = "BuPu", guide = "colorbar", direction = 1)
           #scale_fill_viridis_c(option = "viridis", begin = 0, end = 0.8, direction = -1)
       })
        
