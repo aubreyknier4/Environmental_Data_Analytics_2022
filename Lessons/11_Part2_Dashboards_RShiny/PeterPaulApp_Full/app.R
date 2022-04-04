@@ -4,7 +4,7 @@ library(shinythemes)
 library(tidyverse)
 
 #### Load data ----
-nutrient_data <- read_csv("Data/NTL-LTER_Lake_Nutrients_PeterPaul_Processed.csv")
+nutrient_data <- read_csv("./Data/NTL-LTER_Lake_Nutrients_PeterPaul_Processed.csv")
 nutrient_data$sampledate <- as.Date(nutrient_data$sampledate, format = "%Y-%m-%d")
 nutrient_data <- nutrient_data %>%
   filter(depth_id > 0) %>%

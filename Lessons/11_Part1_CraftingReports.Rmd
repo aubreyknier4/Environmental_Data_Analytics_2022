@@ -65,10 +65,30 @@ See: <https://rmarkdown.rstudio.com> and class recording.
 
 <Fill in our discussion below with bullet points. Use italics and bold for emphasis (hint: use the cheat sheets or `Help` →`Markdown Quick Reference` to figure out how to make bold and italic text).> 
 
+* Creates easily *communicable* output that can use **figures, code, and/or text** to build a report
+* Keeps your script *organized*
+* Multiple output formats and opportunities for **creativity**
+* Separate chunks have **flexible** options
+* Easy to use and conducive to *collaboration*
 
 ## TEXT EDITING CHALLENGE
 
 Create a table below that details the example datasets we have been using in class. The first column should contain the names of the datasets and the second column should include some relevant information about the datasets. (Hint: use the cheat sheets to figure out how to make a table in Rmd)
+
+File Name | Description
+-----------------|-----------------
+ECOTOX_Neonicotinoids_Insects_raw.csv | EPA: Neonicotinoids and their effects on insects
+EPAair_O3_NC2018_raw.csv |EPA: Air quality monitoring of ozone in North Carolina in 2018
+EPAair_O3_NC2019_raw.csv |EPA: Air quality monitoring of ozone in North Carolina in 2019
+EPAair_PM25_NC2018_raw.csv |EPA: Air quality monitoring of PM2.5 in North Carolina in 2018
+EPAair_PM25_NC2019_raw.csv |EPA: Air quality monitoring of PM2.5 in North Carolina in 2019
+EPAair_O3_GaringerNC2010_raw.csv - EPAair_O3_GaringerNC2019_raw.csv | EPA: O3 concentrations at Garinger High School in North Carolina from 2010-2019
+NEON_NIWO_Litter_massdata_2018-08_raw.csv |Litterfal and Fine Woody Debris sampled in 2018    
+NTL-LTER_Lake_ChemistryPhysics_Raw.csv|Physical & chemical data for several lakes in the North Temperate Lakes District in Wisconsin, USA
+NTL-LTER_Lake_Nutrients_Raw.csv|Nutrient measurements for several lakes in the North Temperate Lakes District in Wisconsin, USA
+NTL-LTER_Lake_Carbon_Raw.csv |Carbon data for several lakes in the North Temperate Lakes District in Wisconsin, USA
+NWIS_SiteFlowData_NE_RAW.csv | USGS: National Water Information System flow data
+NWIS_SiteInfo_NE_Raw.csv | USGS: location and general info about groundwater, surface water, and meteorological sites in USA
 
 
 ## R CHUNK EDITING CHALLENGE
@@ -77,6 +97,10 @@ Create a table below that details the example datasets we have been using in cla
 
 Create an R chunk below that installs the package `knitr`. Instead of commenting out the code, customize the chunk options such that the code is not evaluated (i.e., not run).
 
+```{r, eval=F}
+install.packages("knitr")
+
+```
 
 ### Setup
 
@@ -87,6 +111,30 @@ Load the NTL-LTER_Lake_Nutrients_Raw dataset, display the head of the dataset, a
 Customize the chunk options such that the code is run but is not displayed in the final document.
 
 
+```{r setup, include=F, message=F}
+knitr::opts_knit$set(root.dr="/Users/aubreyknier/Desktop/Spring 2022/ENV872_EDA/Environmental_Data_Analytics_2022")
+getwd() #for some reason it would not set the wd to the parent folder so I added the code above
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+mytheme <- theme_classic(base_size = 14) +
+  theme(axis.text = element_text(color = "sienna"), 
+        legend.position = "right")
+theme_set(mytheme)
+
+nutrient.data.raw <- read.csv("./Data/Raw/NTL-LTER_Lake_Nutrients_Raw.csv")
+
+head(nutrient.data.raw)
+
+class(nutrient.data.raw$sampledate)
+nutrient.data.raw$sampledate <- as.Date(
+  nutrient.data.raw$sampledate, "%m/%d/%y")
+class(nutrient.data.raw$sampledate)
+
+```
+
 ### Data Exploration, Wrangling, and Visualization
 
 Create an R chunk below to create a processed dataset do the following operations:
@@ -95,16 +143,77 @@ Create an R chunk below to create a processed dataset do the following operation
 -   Include only surface samples (depth = 0 m)
 -   Drop rows with missing data
 
+```{r}
+#processing the data
+nutrient.data.proc <- nutrient.data.raw %>%
+  select(lakename, year4, daynum, sampledate, depth, tn_ug, tp_ug, nh34, no23, po4) %>%
+    filter(depth==0) %>%
+      drop_na()
+```
+
 Create a second R chunk to create a summary dataset with the mean, minimum, maximum, and standard deviation of total nitrogen concentrations for each lake. Create a second summary dataset that is identical except that it evaluates total phosphorus. Customize the chunk options such that the code is run but not displayed in the final document.
+
+```{r, include=F}
+#summary dataset for nitrogen (N) concentrations at surface 
+nutrient.proc.sum.N <- nutrient.data.proc %>%
+  group_by(lakename) %>%
+    summarize(
+      mean_tn_ug = mean(tn_ug),
+      min_tn_ug = min(tn_ug),
+      max_tn_ug = max(tn_ug),
+      sd_tn_ug = sd(tn_ug)
+    )
+
+#summary dataset for phosphorous (P) concentrations at surface
+nutrient.proc.sum.P <- nutrient.data.proc %>%
+  group_by(lakename) %>%
+    summarize(
+      mean_tp_ug = mean(tp_ug),
+      min_tp_ug = min(tp_ug),
+      max_tp_ug = max(tp_ug),
+      sd_tp_ug = sd(tp_ug)
+    )
+```
 
 Create a third R chunk that uses the function `kable` in the knitr package to display two tables: one for the summary dataframe for total N and one for the summary dataframe of total P. Use the `caption = " "` code within that function to title your tables. Customize the chunk options such that the final table is displayed but not the code used to generate the table.
 
+```{r, echo=F}
+kable(nutrient.proc.sum.N, caption="Summary of surface total nitrogen (N) concentrations for each lake ")
+
+kable(nutrient.proc.sum.P, caption="Summary of surface total phosphorous (P) concentrations for each lake ")
+
+```
+
 Create a fourth and fifth R chunk that generates two plots (one in each chunk): one for total N over time with different colors for each lake, and one with the same setup but for total P. Decide which geom option will be appropriate for your purpose, and select a color palette that is visually pleasing and accessible. Customize the chunk options such that the final figures are displayed but not the code used to generate the figures. In addition, customize the chunk options such that the figures are aligned on the left side of the page. Lastly, add a fig.cap chunk option to add a caption (title) to your plot that will display underneath the figure.
+
+```{r N over time, echo=F, message=F, warning=F, fig.align='left', fig.cap='Total surface N over time in each lake'}
+ggplot(nutrient.data.proc, aes(x=sampledate, y=tn_ug, color=lakename)) +
+    geom_point(alpha=.5) +
+    geom_smooth(se=F) +
+      scale_color_brewer(palette="Dark2") +
+        ylab("[N]") +
+          xlab("Date") 
+```
+
+```{r P over time, echo=F, message=F, warning=F, fig.align='left', fig.cap='Total surface P over time in each lake'}
+ggplot(nutrient.data.proc, aes(x=sampledate, y=tp_ug, color=lakename)) +
+    geom_point(alpha=.5) +
+    geom_smooth(se=F) +
+      scale_color_brewer(palette="Dark2") +
+        ylab("[P]") +
+          xlab("Date") 
+```
 
 
 ### Communicating results
 
 Write a paragraph describing your findings from the R coding challenge above. This should be geared toward an educated audience but one that is not necessarily familiar with the dataset. Then insert a horizontal rule below the paragraph. Below the horizontal rule, write another paragraph describing the next steps you might take in analyzing this dataset. What questions might you be able to answer, and what analyses would you conduct to answer those questions?
+
+The data investigated in the above coding challenge are nutrient measurements for several lakes in the North Temperate Lakes District in Wisconsin, USA. These data were collected at a Long Term Ecological Research station established by the National Science Foundation. The data contain physical and chemical variable measurements, including nutrient concentrations. This report shows that Paul Lake had the lowest average concentrations of *both* nitrogen (N) and phosphorous (P) at the surface, and Hummingbird Lake had the highest average concentrations of *both* elements at the surface (Table 2 and 3). However, data for Hummingbird lake are only available in the final year. East Long Lake had the highest surface N and P concentrations for the vast majority of the time frame (Figure 1 and 2). Although with some variation, the general patterns of decreases/increases in surface nutrient concentrations across the years are reflected in both N and P, indicating that they may be correlated in some way.
+
+--------
+
+With further analysis of these data, we can answer questions surrounding significant differences between nutrient concentrations over lakes at a given point in time or across time. To test the difference between concentrations of two lakes at a given time, a simple t-test can be used. However, to analyze across time, a time series analysis could be carried out with these data to detect seasonality and determine if N and P concentrations have changed over time across different lakes. Additionally, these analyses can be replicated for different depths and compared against each other to see if similar findings and patterns are found across all depths.
 
 
 ## KNIT YOUR PDF
